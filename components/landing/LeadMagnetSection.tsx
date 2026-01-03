@@ -17,7 +17,7 @@ export default function LeadMagnetSection() {
     // Observer pour détecter quand Kit.com affiche le message de succès
     const checkForSuccess = setInterval(() => {
       const successMessage = document.querySelector('.formkit-alert-success')
-      if (successMessage && successMessage.textContent?.includes('Success')) {
+      if (successMessage && successMessage.textContent) {
         // Cacher le message de Kit.com
         (successMessage as HTMLElement).style.display = 'none'
         // Afficher notre modale
@@ -90,12 +90,32 @@ export default function LeadMagnetSection() {
               >
                 <div data-style="clean">
                   <ul className="formkit-alert formkit-alert-error" data-element="errors" data-group="alert"></ul>
-                  <div data-element="fields" data-stacked="false" className="seva-fields formkit-fields">
+                  <div data-element="fields" data-stacked="true" className="seva-fields formkit-fields">
+                    <div className="formkit-field">
+                      <input 
+                        className="formkit-input" 
+                        name="fields[first_name]" 
+                        aria-label="Prénom" 
+                        placeholder="Prénom" 
+                        required 
+                        type="text"
+                      />
+                    </div>
+                    <div className="formkit-field">
+                      <input 
+                        className="formkit-input" 
+                        name="fields[last_name]" 
+                        aria-label="Nom" 
+                        placeholder="Nom" 
+                        required 
+                        type="text"
+                      />
+                    </div>
                     <div className="formkit-field">
                       <input 
                         className="formkit-input" 
                         name="email_address" 
-                        aria-label="Email Address" 
+                        aria-label="Email" 
                         placeholder="ton@email.com" 
                         required 
                         type="email"
@@ -120,7 +140,7 @@ export default function LeadMagnetSection() {
                 
                 .kit-form-wrapper .formkit-fields {
                   display: flex;
-                  flex-wrap: wrap;
+                  flex-direction: column;
                   gap: 12px;
                   margin: 0;
                 }
@@ -128,7 +148,7 @@ export default function LeadMagnetSection() {
                 .kit-form-wrapper .formkit-field {
                   flex: 1 0 auto;
                   margin: 0;
-                  min-width: 200px;
+                  width: 100%;
                 }
                 
                 .kit-form-wrapper .formkit-input {
