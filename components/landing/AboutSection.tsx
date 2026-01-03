@@ -41,9 +41,9 @@ export default function AboutSection() {
 
             {/* Description */}
             <p className="text-zinc-400 mb-6 leading-relaxed">
-              15 ans de direction des opérations. J'ai vécu les process cassés, les outils qui ne se parlent pas, les nuits à rattraper l'admin.
+              15 ans de direction des opérations. J&apos;ai vécu les process cassés, les outils qui ne se parlent pas, les nuits à rattraper l&apos;admin.
               <br /><br />
-              Maintenant j'installe des agents IA qui font ce que je faisais manuellement.
+              Maintenant j&apos;installe des agents IA qui font ce que je faisais manuellement.
             </p>
 
             {/* Stats */}

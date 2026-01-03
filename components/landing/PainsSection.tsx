@@ -30,7 +30,7 @@ export default function PainsSection() {
           className="text-center mb-8"
         >
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            C'est pour toi si...
+            C&apos;est pour toi si...
           </h2>
         </motion.div>
 

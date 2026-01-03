@@ -43,7 +43,7 @@ export default function LeadMagnetSection() {
                 Les blueprints de nos 3 agents.
               </h2>
               <p className="text-lg text-zinc-400">
-                Acquisition, Ops, Admin. Les mêmes qu'on installe chez nos clients.
+                Acquisition, Ops, Admin. Les mêmes qu&apos;on installe chez nos clients.
               </p>
             </div>
 

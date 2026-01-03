@@ -14,7 +14,7 @@ export default function HeroSection() {
       setCurrentWordIndex((prev) => (prev + 1) % words.length)
     }, 2500)
     return () => clearInterval(interval)
-  }, [])
+  }, [words.length])
 
   return (
     <section className="relative z-10 pt-16 pb-20 px-4">

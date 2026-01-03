@@ -39,7 +39,7 @@ export default function ResultsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-            Ce qu'on a constaté chez nos clients.
+            Ce qu&apos;on a constaté chez nos clients.
           </h2>
         </motion.div>
 

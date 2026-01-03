@@ -22,7 +22,7 @@ export default function AvatarBadges() {
           className="text-center mb-8"
         >
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            C'est pour toi
+            C&apos;est pour toi
           </h2>
         </motion.div>
 

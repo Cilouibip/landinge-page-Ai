@@ -27,10 +27,10 @@ export default function BookingSection() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-            On regarde ensemble ce qu'on peut enlever de ton assiette ?
+            On regarde ensemble ce qu&apos;on peut enlever de ton assiette ?
           </h2>
           <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-8">
-            30 minutes. Gratuit. On identifie les 2-3 trucs qui te bouffent du temps et comment un agent peut s'en occuper.
+            30 minutes. Gratuit. On identifie les 2-3 trucs qui te bouffent du temps et comment un agent peut s&apos;en occuper.
           </p>
         </motion.div>
 
