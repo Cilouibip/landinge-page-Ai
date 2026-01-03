@@ -1,21 +1,36 @@
 "use client"
 
-import React, { useEffect } from "react"
-import { motion } from "framer-motion"
-import { Check } from "lucide-react"
+import React, { useEffect, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Check, X, Mail, Sparkles } from "lucide-react"
 import Badge from "@/components/ui/Badge"
 
 export default function LeadMagnetSection() {
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+
   useEffect(() => {
     const script = document.createElement('script')
     script.src = 'https://f.convertkit.com/ckjs/ck.5.js'
     script.async = true
     document.body.appendChild(script)
     
+    // Intercepter la soumission du formulaire Kit.com
+    const handleFormSubmit = (e: Event) => {
+      const form = (e.target as HTMLElement).closest('form')
+      if (form && form.classList.contains('formkit-form')) {
+        setTimeout(() => {
+          setShowSuccessModal(true)
+        }, 500)
+      }
+    }
+
+    document.addEventListener('submit', handleFormSubmit)
+    
     return () => {
       if (document.body.contains(script)) {
         document.body.removeChild(script)
       }
+      document.removeEventListener('submit', handleFormSubmit)
     }
   }, [])
 
@@ -262,6 +277,97 @@ export default function LeadMagnetSection() {
           </div>
         </motion.div>
       </div>
+
+      {/* Modale de succès */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              onClick={() => setShowSuccessModal(false)}
+            />
+
+            {/* Modale */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="relative max-w-md w-full">
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-3xl blur-2xl" />
+                
+                {/* Contenu de la modale */}
+                <div className="relative bg-zinc-900 border border-zinc-800/50 rounded-3xl p-8 shadow-2xl">
+                  {/* Bouton fermer */}
+                  <button
+                    onClick={() => setShowSuccessModal(false)}
+                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-zinc-800 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-zinc-400" />
+                  </button>
+
+                  {/* Icône de succès */}
+                  <div className="flex justify-center mb-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full blur-xl opacity-50" />
+                      <div className="relative w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center">
+                        <Mail className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Titre */}
+                  <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
+                    C&apos;est parti ! 🚀
+                  </h3>
+
+                  {/* Message */}
+                  <div className="space-y-4 mb-6">
+                    <p className="text-zinc-300 text-center leading-relaxed">
+                      <strong className="text-white">Vérifie ta boîte mail</strong> (et tes spams, au cas où).
+                    </p>
+                    
+                    <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-4">
+                      <div className="flex items-start gap-3 mb-3">
+                        <Sparkles className="w-5 h-5 text-violet-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-zinc-300">
+                          Tu vas recevoir les <strong className="text-white">3 blueprints complets</strong> de nos agents IA
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-zinc-300">
+                          Prêts à implémenter dans ton business
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-zinc-400 text-center">
+                      Pendant ce temps, tu peux <a href="#booking" onClick={() => setShowSuccessModal(false)} className="text-violet-400 hover:text-violet-300 underline">réserver ton audit gratuit</a> pour voir comment on peut automatiser ton business.
+                    </p>
+                  </div>
+
+                  {/* Bouton */}
+                  <button
+                    onClick={() => setShowSuccessModal(false)}
+                    className="w-full px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white hover:from-violet-500 hover:to-fuchsia-400 transition-all duration-200"
+                  >
+                    Compris, merci !
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </section>
   )
 }
