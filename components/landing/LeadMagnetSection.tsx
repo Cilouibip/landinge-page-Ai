@@ -14,23 +14,23 @@ export default function LeadMagnetSection() {
     script.async = true
     document.body.appendChild(script)
     
-    // Intercepter la soumission du formulaire Kit.com
-    const handleFormSubmit = (e: Event) => {
-      const form = (e.target as HTMLElement).closest('form')
-      if (form && form.classList.contains('formkit-form')) {
-        setTimeout(() => {
-          setShowSuccessModal(true)
-        }, 500)
+    // Observer pour détecter quand Kit.com affiche le message de succès
+    const checkForSuccess = setInterval(() => {
+      const successMessage = document.querySelector('.formkit-alert-success')
+      if (successMessage && successMessage.textContent?.includes('Success')) {
+        // Cacher le message de Kit.com
+        (successMessage as HTMLElement).style.display = 'none'
+        // Afficher notre modale
+        setShowSuccessModal(true)
+        clearInterval(checkForSuccess)
       }
-    }
-
-    document.addEventListener('submit', handleFormSubmit)
+    }, 100)
     
     return () => {
       if (document.body.contains(script)) {
         document.body.removeChild(script)
       }
-      document.removeEventListener('submit', handleFormSubmit)
+      clearInterval(checkForSuccess)
     }
   }, [])
 
@@ -250,9 +250,7 @@ export default function LeadMagnetSection() {
                 }
                 
                 .kit-form-wrapper .formkit-alert-success {
-                  background: #d3fbeb;
-                  border-color: #10bf7a;
-                  color: #0c905c;
+                  display: none !important;
                 }
                 
                 @media (max-width: 640px) {
