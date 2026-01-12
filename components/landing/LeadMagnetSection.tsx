@@ -1,38 +1,33 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, X, Mail, Sparkles } from "lucide-react"
 import Badge from "@/components/ui/Badge"
+import { subscribeToSystemeIo } from "@/app/actions/subscribe"
 
 export default function LeadMagnetSection() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const script = document.createElement('script')
-    script.src = 'https://f.convertkit.com/ckjs/ck.5.js'
-    script.async = true
-    document.body.appendChild(script)
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError(null)
     
-    // Observer pour détecter quand Kit.com affiche le message de succès
-    const checkForSuccess = setInterval(() => {
-      const successMessage = document.querySelector('.formkit-alert-success')
-      if (successMessage && successMessage.textContent) {
-        // Cacher le message de Kit.com
-        (successMessage as HTMLElement).style.display = 'none'
-        // Afficher notre modale
-        setShowSuccessModal(true)
-        clearInterval(checkForSuccess)
-      }
-    }, 100)
-    
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
-      }
-      clearInterval(checkForSuccess)
+    const formData = new FormData(e.currentTarget)
+    const result = await subscribeToSystemeIo(formData)
+
+    setIsSubmitting(false)
+
+    if (result.success) {
+      setShowSuccessModal(true)
+      e.currentTarget.reset()
+    } else {
+      setError(result.error || "Une erreur est survenue. Réessaye dans quelques instants.")
     }
-  }, [])
+  }
 
   const blueprints = [
     "Agent Acquisition : contenu + qualification + relances",
@@ -78,216 +73,188 @@ export default function LeadMagnetSection() {
               ))}
             </div>
 
-            <div className="kit-form-wrapper">
-              <form 
-                action="https://app.kit.com/forms/8933963/subscriptions" 
-                className="seva-form formkit-form" 
-                method="post" 
-                data-sv-form="8933963" 
-                data-uid="92a1c88bef" 
-                data-format="inline" 
-                data-version="5"
-              >
-                <div data-style="clean">
-                  <ul className="formkit-alert formkit-alert-error" data-element="errors" data-group="alert"></ul>
-                  <div data-element="fields" data-stacked="true" className="seva-fields formkit-fields">
-                    <div className="formkit-field">
-                      <input 
-                        className="formkit-input" 
-                        name="fields[first_name]" 
-                        aria-label="Prénom" 
-                        placeholder="Prénom" 
-                        required 
-                        type="text"
-                      />
-                    </div>
-                    <div className="formkit-field">
-                      <input 
-                        className="formkit-input" 
-                        name="fields[last_name]" 
-                        aria-label="Nom" 
-                        placeholder="Nom" 
-                        required 
-                        type="text"
-                      />
-                    </div>
-                    <div className="formkit-field">
-                      <input 
-                        className="formkit-input" 
-                        name="email_address" 
-                        aria-label="Email" 
-                        placeholder="ton@email.com" 
-                        required 
-                        type="email"
-                      />
-                    </div>
-                    <button data-element="submit" className="formkit-submit">
-                      <div className="formkit-spinner">
+            <form onSubmit={handleSubmit} className="systeme-form-wrapper">
+              {error && (
+                <div className="error-alert">
+                  {error}
+                </div>
+              )}
+              
+              <div className="form-fields">
+                <div className="form-field">
+                  <input 
+                    className="form-input" 
+                    name="first_name" 
+                    aria-label="Prénom" 
+                    placeholder="Prénom" 
+                    required 
+                    type="text"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div className="form-field">
+                  <input 
+                    className="form-input" 
+                    name="last_name" 
+                    aria-label="Nom" 
+                    placeholder="Nom" 
+                    required 
+                    type="text"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div className="form-field">
+                  <input 
+                    className="form-input" 
+                    name="email" 
+                    aria-label="Email" 
+                    placeholder="ton@email.com" 
+                    required 
+                    type="email"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  className="form-submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="spinner">
                         <div></div>
                         <div></div>
                         <div></div>
                       </div>
-                      <span>Recevoir les blueprints</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
+                      <span className="opacity-0">Envoi en cours...</span>
+                    </>
+                  ) : (
+                    <span>Recevoir les blueprints</span>
+                  )}
+                </button>
+              </div>
+            </form>
               
-              <style jsx>{`
-                .kit-form-wrapper .formkit-form * {
-                  box-sizing: border-box;
+            <style jsx>{`
+              .systeme-form-wrapper {
+                width: 100%;
+              }
+              
+              .error-alert {
+                background: #fde8e2;
+                border: 1px solid #f2643b;
+                border-radius: 8px;
+                color: #ea4110;
+                margin: 0 0 16px 0;
+                padding: 12px;
+                text-align: center;
+                font-size: 14px;
+              }
+              
+              .form-fields {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              }
+              
+              .form-field {
+                width: 100%;
+              }
+              
+              .form-input {
+                width: 100%;
+                padding: 12px 16px;
+                background: #09090b;
+                border: 1px solid #27272a;
+                border-radius: 8px;
+                color: #ffffff;
+                font-size: 15px;
+                line-height: 1.4;
+                transition: all 300ms ease;
+              }
+              
+              .form-input::placeholder {
+                color: #71717a;
+                opacity: 1;
+              }
+              
+              .form-input:focus {
+                outline: none;
+                border-color: #8b5cf6;
+                box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+              }
+              
+              .form-input:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+              }
+              
+              .form-submit {
+                width: 100%;
+                padding: 12px 32px;
+                background: linear-gradient(to right, #7c3aed, #d946ef);
+                border: none;
+                border-radius: 8px;
+                color: #ffffff;
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 200ms ease;
+                position: relative;
+                overflow: hidden;
+              }
+              
+              .form-submit:hover:not(:disabled) {
+                background: linear-gradient(to right, #6d28d9, #c026d3);
+                transform: translateY(-1px);
+                box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
+              }
+              
+              .form-submit:active:not(:disabled) {
+                transform: translateY(0);
+              }
+              
+              .form-submit:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+              }
+              
+              .spinner {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 4px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+              }
+              
+              .spinner > div {
+                width: 8px;
+                height: 8px;
+                background-color: #fff;
+                border-radius: 100%;
+                animation: bounce 1.4s infinite ease-in-out both;
+              }
+              
+              .spinner > div:nth-child(1) {
+                animation-delay: -0.32s;
+              }
+              
+              .spinner > div:nth-child(2) {
+                animation-delay: -0.16s;
+              }
+              
+              @keyframes bounce {
+                0%, 80%, 100% {
+                  transform: scale(0);
                 }
-                
-                .kit-form-wrapper .formkit-fields {
-                  display: flex;
-                  flex-direction: column;
-                  gap: 12px;
-                  margin: 0;
+                40% {
+                  transform: scale(1);
                 }
-                
-                .kit-form-wrapper .formkit-field {
-                  flex: 1 0 auto;
-                  margin: 0;
-                  width: 100%;
-                }
-                
-                .kit-form-wrapper .formkit-input {
-                  width: 100%;
-                  padding: 12px 16px;
-                  background: #09090b;
-                  border: 1px solid #27272a;
-                  border-radius: 8px;
-                  color: #ffffff;
-                  font-size: 15px;
-                  line-height: 1.4;
-                  transition: all 300ms ease;
-                }
-                
-                .kit-form-wrapper .formkit-input::placeholder {
-                  color: #71717a;
-                  opacity: 1;
-                }
-                
-                .kit-form-wrapper .formkit-input:focus {
-                  outline: none;
-                  border-color: #8b5cf6;
-                  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-                }
-                
-                .kit-form-wrapper .formkit-submit {
-                  flex: 0 0 auto;
-                  margin: 0;
-                  padding: 12px 32px;
-                  background: linear-gradient(to right, #7c3aed, #d946ef);
-                  border: none;
-                  border-radius: 8px;
-                  color: #ffffff;
-                  font-size: 15px;
-                  font-weight: 500;
-                  cursor: pointer;
-                  transition: all 200ms ease;
-                  position: relative;
-                  overflow: hidden;
-                  white-space: nowrap;
-                }
-                
-                .kit-form-wrapper .formkit-submit:hover {
-                  background: linear-gradient(to right, #6d28d9, #c026d3);
-                  transform: translateY(-1px);
-                  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
-                }
-                
-                .kit-form-wrapper .formkit-submit:active {
-                  transform: translateY(0);
-                }
-                
-                .kit-form-wrapper .formkit-spinner {
-                  display: flex;
-                  height: 0;
-                  width: 0;
-                  margin: 0 auto;
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  right: 0;
-                  overflow: hidden;
-                  opacity: 0;
-                  transition: all 300ms ease;
-                }
-                
-                .kit-form-wrapper .formkit-submit[data-active] .formkit-spinner {
-                  opacity: 1;
-                  height: 100%;
-                  width: 50px;
-                }
-                
-                .kit-form-wrapper .formkit-submit[data-active] .formkit-spinner ~ span {
-                  opacity: 0;
-                }
-                
-                .kit-form-wrapper .formkit-spinner > div {
-                  margin: auto;
-                  width: 12px;
-                  height: 12px;
-                  background-color: #fff;
-                  opacity: 0.3;
-                  border-radius: 100%;
-                  display: inline-block;
-                  animation: formkit-bouncedelay 1.4s infinite ease-in-out both;
-                }
-                
-                .kit-form-wrapper .formkit-spinner > div:nth-child(1) {
-                  animation-delay: -0.32s;
-                }
-                
-                .kit-form-wrapper .formkit-spinner > div:nth-child(2) {
-                  animation-delay: -0.16s;
-                }
-                
-                @keyframes formkit-bouncedelay {
-                  0%, 80%, 100% {
-                    transform: scale(0);
-                  }
-                  40% {
-                    transform: scale(1);
-                  }
-                }
-                
-                .kit-form-wrapper .formkit-alert {
-                  background: #fde8e2;
-                  border: 1px solid #f2643b;
-                  border-radius: 8px;
-                  color: #ea4110;
-                  list-style: none;
-                  margin: 0 0 16px 0;
-                  padding: 12px;
-                  text-align: center;
-                  width: 100%;
-                }
-                
-                .kit-form-wrapper .formkit-alert:empty {
-                  display: none;
-                }
-                
-                .kit-form-wrapper .formkit-alert-success {
-                  display: none !important;
-                }
-                
-                @media (max-width: 640px) {
-                  .kit-form-wrapper .formkit-fields {
-                    flex-direction: column;
-                  }
-                  
-                  .kit-form-wrapper .formkit-field {
-                    min-width: 100%;
-                  }
-                  
-                  .kit-form-wrapper .formkit-submit {
-                    width: 100%;
-                  }
-                }
-              `}</style>
-            </div>
+              }
+            `}</style>
             
             <p className="text-xs text-zinc-500 text-center mt-4">
               Pas de spam. Juste des blueprints qui marchent.
