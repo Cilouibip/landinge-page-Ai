@@ -1,17 +1,31 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, X, Mail, Sparkles } from "lucide-react"
 import Badge from "@/components/ui/Badge"
+import Portal from "@/components/ui/Portal"
 import { subscribeToSystemeIo } from "@/app/actions/subscribe"
 
-export default function LeadMagnetSection() {
+export interface LeadMagnetSectionRef {
+  openModal: (email: string) => void
+}
+
+const LeadMagnetSection = forwardRef<LeadMagnetSectionRef>((props, ref) => {
   const [showModal, setShowModal] = useState(false)
   const [modalStep, setModalStep] = useState<'tally' | 'success'>('tally')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState<string>("")
+
+  // Expose openModal method to parent via ref
+  useImperativeHandle(ref, () => ({
+    openModal: (email: string) => {
+      setUserEmail(email)
+      setModalStep('tally')
+      setShowModal(true)
+    }
+  }), [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -35,6 +49,21 @@ export default function LeadMagnetSection() {
       setError(result.error || "Une erreur est survenue. Réessaye dans quelques instants.")
     }
   }
+
+  // Bloquer le scroll du body ET html quand la modale est ouverte
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+  }, [showModal])
 
   useEffect(() => {
     // Charger le script Tally pour dynamicHeight
@@ -299,28 +328,28 @@ export default function LeadMagnetSection() {
       {/* Modale */}
       <AnimatePresence>
         {showModal && (
-          <>
-            {/* Overlay */}
+          <Portal>
+            {/* Overlay opaque */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black z-[9999]"
               onClick={() => setShowModal(false)}
             />
 
-            {/* Modale */}
+            {/* Container modale */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+              className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
             >
-              <div className="relative max-w-2xl w-full mx-4" style={{ minHeight: '80vh', maxHeight: '90vh' }}>
+              <div className="relative max-w-2xl w-full">
                 {/* Contenu de la modale */}
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl h-full" style={{ backgroundColor: '#1a1917' }}>
+                <div className="relative rounded-3xl shadow-2xl bg-[#1a1917]">
                   {/* Bouton fermer */}
                   <button
                     onClick={() => setShowModal(false)}
@@ -332,63 +361,92 @@ export default function LeadMagnetSection() {
                   {modalStep === 'tally' ? (
                     <>
                       {/* Titre */}
-                      <div className="px-8 py-6" style={{ backgroundColor: '#1a1917' }}>
+                      <div className="px-8 py-6 bg-[#1a1917]">
                         <h3 className="text-2xl md:text-3xl font-bold text-white text-center">
-                          Personnalisez votre Agent Yael
+                          Personnalisez votre Agent IA
                         </h3>
                       </div>
                       
                       {/* Iframe Tally avec email pré-rempli */}
-                      <div className="px-4 pb-4" style={{ height: 'calc(80vh - 100px)', backgroundColor: '#1a1917' }}>
+                      <div className="px-4 pb-4 bg-[#1a1917]">
                         <iframe
                           src={`https://tally.so/embed/ZjO8PV?alignLeft=1&hideTitle=1&dynamicHeight=1&email=${encodeURIComponent(userEmail)}`}
                           width="100%"
-                          height="100%"
                           frameBorder="0"
                           marginHeight={0}
                           marginWidth={0}
                           title="Questionnaire de diagnostic"
-                          style={{ border: 'none' }}
+                          style={{ height: '70vh', minHeight: '500px', border: 'none', overflow: 'auto' }}
                         />
                       </div>
                     </>
                   ) : (
-                    <div className="rounded-3xl p-8 h-full flex flex-col items-center justify-center" style={{ backgroundColor: '#1a1917' }}>
-                      {/* Icône de succès */}
-                      <div className="flex justify-center mb-6">
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full blur-xl opacity-50" />
-                          <div className="relative w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center">
-                            <Check className="w-8 h-8 text-white" />
+                    <div className="relative">
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-3xl blur-2xl" />
+                      
+                      <div className="relative bg-zinc-900 border border-zinc-800/50 rounded-3xl p-8 shadow-2xl">
+                        {/* Icône de succès */}
+                        <div className="flex justify-center mb-6">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full blur-xl opacity-50" />
+                            <div className="relative w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center">
+                              <Check className="w-8 h-8 text-white" />
+                            </div>
                           </div>
                         </div>
+
+                        {/* Titre */}
+                        <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
+                          Diagnostic reçu ! 🚀
+                        </h3>
+
+                        {/* Message */}
+                        <div className="space-y-4 mb-6">
+                          <p className="text-zinc-300 text-center leading-relaxed">
+                            <strong className="text-white">Vérifie ta boîte mail</strong> (et tes spams, au cas où).
+                          </p>
+                          
+                          <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-4">
+                            <div className="flex items-start gap-3 mb-3">
+                              <Sparkles className="w-5 h-5 text-violet-400 flex-shrink-0 mt-0.5" />
+                              <p className="text-sm text-zinc-300">
+                                Tu vas recevoir <strong className="text-white">l'accès à tes agents IA</strong>
+                              </p>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-sm text-zinc-300">
+                                Je reviens vers toi avec une <strong className="text-white">proposition personnalisée</strong>
+                              </p>
+                            </div>
+                          </div>
+
+                          <p className="text-sm text-zinc-400 text-center">
+                            Tu veux aller plus vite ? <a href="https://calendly.com/mehdi-zen/appel-turbo" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 underline">Réserve ton audit gratuit</a>
+                          </p>
+                        </div>
+
+                        {/* Bouton */}
+                        <button
+                          onClick={() => setShowModal(false)}
+                          className="w-full px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white hover:from-violet-500 hover:to-fuchsia-400 transition-all duration-200"
+                        >
+                          Compris, merci !
+                        </button>
                       </div>
-
-                      {/* Titre */}
-                      <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
-                        Diagnostic reçu !
-                      </h3>
-
-                      {/* Message */}
-                      <p className="text-zinc-300 text-center leading-relaxed mb-6">
-                        On se retrouve dans ta boîte mail pour la suite.
-                      </p>
-
-                      {/* Bouton */}
-                      <button
-                        onClick={() => setShowModal(false)}
-                        className="px-8 py-3 rounded-lg font-medium bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white hover:from-violet-500 hover:to-fuchsia-400 transition-all duration-200"
-                      >
-                        Parfait, merci !
-                      </button>
                     </div>
                   )}
                 </div>
               </div>
             </motion.div>
-          </>
+          </Portal>
         )}
       </AnimatePresence>
     </section>
   )
-}
+})
+
+LeadMagnetSection.displayName = 'LeadMagnetSection'
+
+export default LeadMagnetSection

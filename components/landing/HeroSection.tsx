@@ -5,7 +5,11 @@ import { motion, AnimatePresence } from "framer-motion"
 import Button from "@/components/ui/Button"
 import Badge from "@/components/ui/Badge"
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  onOpenPopup?: () => void
+}
+
+export default function HeroSection({ onOpenPopup }: HeroSectionProps) {
   const words = ['clients', 'temps', 'marge']
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
 
@@ -97,9 +101,12 @@ export default function HeroSection() {
           <Button onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}>
             Obtenir un audit IA gratuit
           </Button>
-          <Button variant="outline" onClick={() => document.getElementById('lead-magnet')?.scrollIntoView({ behavior: 'smooth' })}>
-            Obtenir 3 agents gratuitement
-          </Button>
+          <button 
+            onClick={onOpenPopup}
+            className="px-6 py-3 rounded-lg border-2 border-white/80 text-white font-semibold bg-transparent hover:bg-white/10 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+          >
+            Obtenir mes agents gratuitement
+          </button>
         </motion.div>
 
       </div>

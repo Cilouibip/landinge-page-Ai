@@ -1,8 +1,9 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import { TrendingUp, Grid3x3, DollarSign } from "lucide-react"
 import AnimatedDotsCanvas from "@/components/ui/AnimatedDotsCanvas"
+import AutoPopup from "@/components/ui/AutoPopup"
 import Header from "@/components/landing/Header"
 import HeroSection from "@/components/landing/HeroSection"
 import PainsSection from "@/components/landing/PainsSection"
@@ -12,8 +13,53 @@ import LeadMagnetSection from "@/components/landing/LeadMagnetSection"
 import AboutSection from "@/components/landing/AboutSection"
 import BookingSection from "@/components/landing/BookingSection"
 import Footer from "@/components/landing/Footer"
+import { subscribeToSystemeIo } from "@/app/actions/subscribe"
 
 export default function TonAgentIALanding() {
+  const [showAutoPopup, setShowAutoPopup] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const leadMagnetRef = useRef<{ openModal: (email: string) => void } | null>(null)
+
+  // Auto-open popup after 4 seconds
+  useEffect(() => {
+    const hasInteracted = localStorage.getItem('tonagentia_popup_closed')
+    if (hasInteracted) return
+
+    const timer = setTimeout(() => {
+      setShowAutoPopup(true)
+    }, 4000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Handle popup submission
+  const handlePopupSubmit = useCallback(async (email: string, firstName: string, lastName: string) => {
+    setIsSubmitting(true)
+    
+    const formData = new FormData()
+    formData.append('email', email)
+    formData.append('first_name', firstName)
+    formData.append('last_name', lastName)
+    
+    const result = await subscribeToSystemeIo(formData)
+    setIsSubmitting(false)
+
+    if (result.success && leadMagnetRef.current) {
+      // Open Tally modal in LeadMagnetSection
+      leadMagnetRef.current.openModal(email)
+    }
+  }, [])
+
+  // Function to open popup programmatically
+  const openPopup = useCallback(() => {
+    setShowAutoPopup(true)
+  }, [])
+
+  // Function to close popup
+  const closePopup = useCallback(() => {
+    setShowAutoPopup(false)
+  }, [])
+
   return (
     <div className="relative bg-zinc-950 text-gray-300 min-h-screen flex flex-col overflow-x-hidden">
       <AnimatedDotsCanvas />
@@ -24,10 +70,10 @@ export default function TonAgentIALanding() {
         }} 
       />
 
-      <Header />
+      <Header onOpenPopup={openPopup} />
 
       <main className="flex-grow flex flex-col relative z-10">
-        <HeroSection />
+        <HeroSection onOpenPopup={openPopup} />
         
         <PainsSection />
 
@@ -72,7 +118,7 @@ export default function TonAgentIALanding() {
 
         <ResultsSection />
 
-        <LeadMagnetSection />
+        <LeadMagnetSection ref={leadMagnetRef} />
 
         <AboutSection />
 
@@ -80,6 +126,14 @@ export default function TonAgentIALanding() {
       </main>
 
       <Footer />
+
+      {/* Auto Popup */}
+      <AutoPopup
+        isOpen={showAutoPopup}
+        onClose={closePopup}
+        onSubmit={handlePopupSubmit}
+        isLoading={isSubmitting}
+      />
     </div>
   )
 }

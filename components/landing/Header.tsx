@@ -5,7 +5,11 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent, type Variants 
 import { Menu, X } from "lucide-react"
 import Button from "@/components/ui/Button"
 
-export default function Header() {
+interface HeaderProps {
+  onOpenPopup?: () => void
+}
+
+export default function Header({ onOpenPopup }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { scrollY } = useScroll()
@@ -73,9 +77,9 @@ export default function Header() {
         </div>
 
         <div className="flex items-center flex-shrink-0 space-x-4 lg:space-x-6">
-          <a href="#lead-magnet" className="hidden md:inline-block text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200">
-            Blueprints gratuits
-          </a>
+          <button onClick={onOpenPopup} className="hidden md:inline-block px-4 py-2 text-sm font-semibold text-white bg-transparent border-2 border-white/80 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]">
+            Mes agents gratuits
+          </button>
           <Button onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}>
             Obtenir un audit IA gratuit
           </Button>
@@ -115,9 +119,9 @@ export default function Header() {
                 Résultats
               </a>
               <hr className="w-full border-t border-gray-700/50 my-2" />
-              <a href="#lead-magnet" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200">
-                Blueprints gratuits
-              </a>
+              <button onClick={() => { setIsMobileMenuOpen(false); onOpenPopup?.(); }} className="px-4 py-2 text-sm font-semibold text-white bg-transparent border-2 border-white/80 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]">
+                Mes agents gratuits
+              </button>
             </div>
           </motion.div>
         )}
