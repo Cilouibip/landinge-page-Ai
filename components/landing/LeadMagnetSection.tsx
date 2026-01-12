@@ -316,18 +316,15 @@ export default function LeadMagnetSection() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4"
             >
-              <div className="relative max-w-2xl w-full" style={{ minHeight: '80vh', maxHeight: '90vh' }}>
-                {/* Glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-3xl blur-2xl" />
-                
+              <div className="relative max-w-2xl w-full mx-4" style={{ minHeight: '80vh', maxHeight: '90vh' }}>
                 {/* Contenu de la modale */}
-                <div className="relative bg-transparent rounded-3xl overflow-hidden shadow-2xl h-full">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl h-full" style={{ backgroundColor: '#1a1917' }}>
                   {/* Bouton fermer */}
                   <button
                     onClick={() => setShowModal(false)}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-zinc-800/80 hover:bg-zinc-700 transition-colors z-10"
+                    className="absolute top-4 right-4 p-2 rounded-full bg-zinc-800/80 hover:bg-zinc-700 transition-colors z-20"
                   >
                     <X className="w-5 h-5 text-zinc-400" />
                   </button>
@@ -335,16 +332,16 @@ export default function LeadMagnetSection() {
                   {modalStep === 'tally' ? (
                     <>
                       {/* Titre */}
-                      <div className="bg-zinc-900/95 border border-zinc-800/50 rounded-t-3xl px-8 py-6">
+                      <div className="px-8 py-6" style={{ backgroundColor: '#1a1917' }}>
                         <h3 className="text-2xl md:text-3xl font-bold text-white text-center">
                           Personnalisez votre Agent Yael
                         </h3>
                       </div>
                       
                       {/* Iframe Tally avec email pré-rempli */}
-                      <div className="bg-zinc-900/95 border-x border-b border-zinc-800/50 rounded-b-3xl" style={{ height: 'calc(80vh - 100px)' }}>
+                      <div className="px-4 pb-4" style={{ height: 'calc(80vh - 100px)', backgroundColor: '#1a1917' }}>
                         <iframe
-                          src={`https://tally.so/embed/ZjO8PV?email=${encodeURIComponent(userEmail)}&alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1`}
+                          src={`https://tally.so/embed/ZjO8PV?alignLeft=1&hideTitle=1&dynamicHeight=1&email=${encodeURIComponent(userEmail)}`}
                           width="100%"
                           height="100%"
                           frameBorder="0"
@@ -356,7 +353,7 @@ export default function LeadMagnetSection() {
                       </div>
                     </>
                   ) : (
-                    <div className="bg-zinc-900/95 border border-zinc-800/50 rounded-3xl p-8 h-full flex flex-col items-center justify-center">
+                    <div className="rounded-3xl p-8 h-full flex flex-col items-center justify-center" style={{ backgroundColor: '#1a1917' }}>
                       {/* Icône de succès */}
                       <div className="flex justify-center mb-6">
                         <div className="relative">
