@@ -7,7 +7,8 @@ import Badge from "@/components/ui/Badge"
 import { subscribeToSystemeIo } from "@/app/actions/subscribe"
 
 export default function LeadMagnetSection() {
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [modalStep, setModalStep] = useState<'tally' | 'success'>('tally')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState<string>("")
@@ -27,7 +28,8 @@ export default function LeadMagnetSection() {
 
     if (result.success) {
       setUserEmail(email)
-      setShowSuccessModal(true)
+      setModalStep('tally')
+      setShowModal(true)
       form.reset()
     } else {
       setError(result.error || "Une erreur est survenue. Réessaye dans quelques instants.")
@@ -36,19 +38,29 @@ export default function LeadMagnetSection() {
 
   useEffect(() => {
     // Charger le script Tally pour dynamicHeight
-    if (showSuccessModal) {
+    if (showModal && modalStep === 'tally') {
       const script = document.createElement('script')
       script.src = 'https://tally.so/widgets/embed.js'
       script.async = true
       document.body.appendChild(script)
       
+      // Écouter la soumission du formulaire Tally
+      const handleTallySubmit = (event: MessageEvent) => {
+        if (event.data.type === 'Tally.FormSubmitted') {
+          setModalStep('success')
+        }
+      }
+      
+      window.addEventListener('message', handleTallySubmit)
+      
       return () => {
         if (document.body.contains(script)) {
           document.body.removeChild(script)
         }
+        window.removeEventListener('message', handleTallySubmit)
       }
     }
-  }, [showSuccessModal])
+  }, [showModal, modalStep])
 
   const blueprints = [
     "Agent Acquisition : contenu + qualification + relances",
@@ -284,9 +296,9 @@ export default function LeadMagnetSection() {
         </motion.div>
       </div>
 
-      {/* Modale de succès */}
+      {/* Modale */}
       <AnimatePresence>
-        {showSuccessModal && (
+        {showModal && (
           <>
             {/* Overlay */}
             <motion.div
@@ -295,7 +307,7 @@ export default function LeadMagnetSection() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
-              onClick={() => setShowSuccessModal(false)}
+              onClick={() => setShowModal(false)}
             />
 
             {/* Modale */}
@@ -306,33 +318,74 @@ export default function LeadMagnetSection() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="relative max-w-2xl w-full max-h-[90vh]">
+              <div className="relative max-w-2xl w-full" style={{ minHeight: '80vh', maxHeight: '90vh' }}>
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-3xl blur-2xl" />
                 
                 {/* Contenu de la modale */}
-                <div className="relative bg-zinc-900 border border-zinc-800/50 rounded-3xl overflow-hidden shadow-2xl">
+                <div className="relative bg-transparent rounded-3xl overflow-hidden shadow-2xl h-full">
                   {/* Bouton fermer */}
                   <button
-                    onClick={() => setShowSuccessModal(false)}
+                    onClick={() => setShowModal(false)}
                     className="absolute top-4 right-4 p-2 rounded-full bg-zinc-800/80 hover:bg-zinc-700 transition-colors z-10"
                   >
                     <X className="w-5 h-5 text-zinc-400" />
                   </button>
 
-                  {/* Iframe Tally avec email pré-rempli */}
-                  <div className="w-full" style={{ minHeight: '500px', maxHeight: '80vh' }}>
-                    <iframe
-                      src={`https://tally.so/embed/ZjO8PV?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&email=${encodeURIComponent(userEmail)}`}
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      marginHeight={0}
-                      marginWidth={0}
-                      title="Questionnaire de diagnostic"
-                      style={{ minHeight: '500px' }}
-                    />
-                  </div>
+                  {modalStep === 'tally' ? (
+                    <>
+                      {/* Titre */}
+                      <div className="bg-zinc-900/95 border border-zinc-800/50 rounded-t-3xl px-8 py-6">
+                        <h3 className="text-2xl md:text-3xl font-bold text-white text-center">
+                          Personnalisez votre Agent Yael
+                        </h3>
+                      </div>
+                      
+                      {/* Iframe Tally avec email pré-rempli */}
+                      <div className="bg-zinc-900/95 border-x border-b border-zinc-800/50 rounded-b-3xl" style={{ height: 'calc(80vh - 100px)' }}>
+                        <iframe
+                          src={`https://tally.so/embed/ZjO8PV?email=${encodeURIComponent(userEmail)}&alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1`}
+                          width="100%"
+                          height="100%"
+                          frameBorder="0"
+                          marginHeight={0}
+                          marginWidth={0}
+                          title="Questionnaire de diagnostic"
+                          style={{ border: 'none' }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="bg-zinc-900/95 border border-zinc-800/50 rounded-3xl p-8 h-full flex flex-col items-center justify-center">
+                      {/* Icône de succès */}
+                      <div className="flex justify-center mb-6">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full blur-xl opacity-50" />
+                          <div className="relative w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center">
+                            <Check className="w-8 h-8 text-white" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Titre */}
+                      <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
+                        Diagnostic reçu !
+                      </h3>
+
+                      {/* Message */}
+                      <p className="text-zinc-300 text-center leading-relaxed mb-6">
+                        On se retrouve dans ta boîte mail pour la suite.
+                      </p>
+
+                      {/* Bouton */}
+                      <button
+                        onClick={() => setShowModal(false)}
+                        className="px-8 py-3 rounded-lg font-medium bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white hover:from-violet-500 hover:to-fuchsia-400 transition-all duration-200"
+                      >
+                        Parfait, merci !
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
