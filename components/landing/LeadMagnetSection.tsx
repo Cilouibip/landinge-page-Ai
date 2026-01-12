@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, X, Mail, Sparkles } from "lucide-react"
 import Badge from "@/components/ui/Badge"
@@ -10,24 +10,45 @@ export default function LeadMagnetSection() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string>("")
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    const form = e.currentTarget
     setIsSubmitting(true)
     setError(null)
     
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(form)
+    const email = formData.get("email") as string
+    
     const result = await subscribeToSystemeIo(formData)
 
     setIsSubmitting(false)
 
     if (result.success) {
+      setUserEmail(email)
       setShowSuccessModal(true)
-      e.currentTarget.reset()
+      form.reset()
     } else {
       setError(result.error || "Une erreur est survenue. Réessaye dans quelques instants.")
     }
   }
+
+  useEffect(() => {
+    // Charger le script Tally pour dynamicHeight
+    if (showSuccessModal) {
+      const script = document.createElement('script')
+      script.src = 'https://tally.so/widgets/embed.js'
+      script.async = true
+      document.body.appendChild(script)
+      
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script)
+        }
+      }
+    }
+  }, [showSuccessModal])
 
   const blueprints = [
     "Agent Acquisition : contenu + qualification + relances",
@@ -285,68 +306,33 @@ export default function LeadMagnetSection() {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="relative max-w-md w-full">
+              <div className="relative max-w-2xl w-full max-h-[90vh]">
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-3xl blur-2xl" />
                 
                 {/* Contenu de la modale */}
-                <div className="relative bg-zinc-900 border border-zinc-800/50 rounded-3xl p-8 shadow-2xl">
+                <div className="relative bg-zinc-900 border border-zinc-800/50 rounded-3xl overflow-hidden shadow-2xl">
                   {/* Bouton fermer */}
                   <button
                     onClick={() => setShowSuccessModal(false)}
-                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-zinc-800 transition-colors"
+                    className="absolute top-4 right-4 p-2 rounded-full bg-zinc-800/80 hover:bg-zinc-700 transition-colors z-10"
                   >
                     <X className="w-5 h-5 text-zinc-400" />
                   </button>
 
-                  {/* Icône de succès */}
-                  <div className="flex justify-center mb-6">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full blur-xl opacity-50" />
-                      <div className="relative w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center">
-                        <Mail className="w-8 h-8 text-white" />
-                      </div>
-                    </div>
+                  {/* Iframe Tally avec email pré-rempli */}
+                  <div className="w-full" style={{ minHeight: '500px', maxHeight: '80vh' }}>
+                    <iframe
+                      src={`https://tally.so/embed/ZjO8PV?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1&email=${encodeURIComponent(userEmail)}`}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      marginHeight={0}
+                      marginWidth={0}
+                      title="Questionnaire de diagnostic"
+                      style={{ minHeight: '500px' }}
+                    />
                   </div>
-
-                  {/* Titre */}
-                  <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
-                    C&apos;est parti ! 🚀
-                  </h3>
-
-                  {/* Message */}
-                  <div className="space-y-4 mb-6">
-                    <p className="text-zinc-300 text-center leading-relaxed">
-                      <strong className="text-white">Vérifie ta boîte mail</strong> (et tes spams, au cas où).
-                    </p>
-                    
-                    <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-4">
-                      <div className="flex items-start gap-3 mb-3">
-                        <Sparkles className="w-5 h-5 text-violet-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-zinc-300">
-                          Tu vas recevoir les <strong className="text-white">3 blueprints complets</strong> de nos agents IA
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-zinc-300">
-                          Prêts à implémenter dans ton business
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-sm text-zinc-400 text-center">
-                      Pendant ce temps, tu peux <a href="#booking" onClick={() => setShowSuccessModal(false)} className="text-violet-400 hover:text-violet-300 underline">réserver ton audit gratuit</a> pour voir comment on peut automatiser ton business.
-                    </p>
-                  </div>
-
-                  {/* Bouton */}
-                  <button
-                    onClick={() => setShowSuccessModal(false)}
-                    className="w-full px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white hover:from-violet-500 hover:to-fuchsia-400 transition-all duration-200"
-                  >
-                    Compris, merci !
-                  </button>
                 </div>
               </div>
             </motion.div>
